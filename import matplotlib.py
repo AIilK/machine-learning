@@ -2,30 +2,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pylab as pl
 import numpy as np
-from sklearn import linear_model
-from sklearn.metrics import r2_score
-
 
 df = pd.read_csv("FuelConsumptionCo2.csv")
+cdf = df[['ENGINESIZE','CYLINDERS','FUELCONSUMPTION_CITY','FUELCONSUMPTION_HWY','FUELCONSUMPTION_COMB','CO2EMISSIONS']]
 
-cdf = df[['ENGINESIZE','CYLINDERS','FUELCONSUMPTION_COMB','CO2EMISSIONS']]
-# viz first
-viz = cdf[['CYLINDERS','ENGINESIZE','CO2EMISSIONS','FUELCONSUMPTION_COMB']]
-#viz.hist()
-#plt.show()
-
-plt.scatter(cdf.FUELCONSUMPTION_COMB, cdf.CO2EMISSIONS,  color='blue')
-plt.xlabel("FUELCONSUMPTION_COMB")
-plt.ylabel("Emission")
-plt.show()
-
-
-
-plt.scatter(cdf.ENGINESIZE, cdf.CO2EMISSIONS,  color='blue')
-plt.xlabel("Engine size")
-plt.ylabel("Emission")
-plt.show()
-
+# plt.scatter(cdf.ENGINESIZE, cdf.CO2EMISSIONS,  color='blue')
+# plt.xlabel("Engine size")
+# plt.ylabel("Emission")
+# plt.show()
 
 msk = np.random.rand(len(df)) < 0.8
 train = cdf[msk]
@@ -36,32 +20,20 @@ plt.xlabel("Engine size")
 plt.ylabel("Emission")
 plt.show()
 
-
-
+from sklearn import linear_model
 regr = linear_model.LinearRegression()
-train_x = np.asanyarray(train[['ENGINESIZE']])
-train_y = np.asanyarray(train[['CO2EMISSIONS']])
-regr.fit (train_x, train_y)
-#   The coefficients
+x = np.asanyarray(train[['ENGINESIZE','CYLINDERS','FUELCONSUMPTION_COMB']])
+y = np.asanyarray(train[['CO2EMISSIONS']])
+regr.fit (x, y)
+# The coefficients
 print ('Coefficients: ', regr.coef_)
-print ('Intercept: ',regr.intercept_)
-
-#       the label of reger
-plt.scatter(train.ENGINESIZE, train.CO2EMISSIONS,  color='blue')
-plt.plot(train_x, regr.coef_[0][0]*train_x + regr.intercept_[0], '-r')
-plt.xlabel("Engine size")
-plt.ylabel("Emission")
-plt.show()
-
-#       error 
-test_x = np.asanyarray(test[['ENGINESIZE']])
-test_y = np.asanyarray(test[['CO2EMISSIONS']])
-test_y_ = regr.predict(test_x)
-print("Mean absolute error: %.2f" % np.mean(np.absolute(test_y_ - test_y)))
-print("Residual sum of squares (MSE): %.2f" % np.mean((test_y_ - test_y) ** 2))
-print("R2-score: %.2f" % r2_score(test_y , test_y_) )
 
 
-z = [[5]]
-f = regr.predict(z)
-print(f*r2_score(test_y,test_y_))
+y_hat= regr.predict(test[['ENGINESIZE','CYLINDERS','FUELCONSUMPTION_COMB']])
+x = np.asanyarray(test[['ENGINESIZE','CYLINDERS','FUELCONSUMPTION_COMB']])
+y = np.asanyarray(test[['CO2EMISSIONS']])
+print("Residual sum of squares: %.2f"
+      % np.mean((y_hat - y) ** 2))
+
+# Explained variance score: 1 is perfect prediction
+print('Variance score: %.2f' % regr.score(x, y))
